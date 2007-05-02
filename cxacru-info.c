@@ -19,6 +19,8 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 	Or, point your browser to http://www.gnu.org/copyleft/gpl.html
 
+
+	http://simon.arlott.org/sw/cxacru-info/
 	$Id$
 */
 
