@@ -53,7 +53,7 @@ char *cxacru(const char *file) {
 		exit(1);
 	}
 
-	data = malloc(MAXLEN + 1);
+	data = malloc(MAXLEN + 1); // ensure string is always terminated
 	if (data == NULL) {
 		perror("malloc");
 		exit(3);
