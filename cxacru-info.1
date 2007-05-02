@@ -1,0 +1,37 @@
+.TH CXACRU-INFO 1 "$Date$" Linux "User Commands"
+.SH NAME
+cxacru-info \- outputs cxacru status information from sysfs
+.SH SYNOPSIS
+.B cxacru-info [
+.I device num
+.B ]
+.br
+.B cxacru-info [-h | --help]
+.SH DESCRIPTION
+.B cxacru-info
+retrives status information of Conexant Accessrunner USB
+ADSL modems from sysfs. By default it uses the first cxacru
+device it finds, otherwise it uses the device with the
+specified device number.
+.SH OPTIONS
+.TP
+.BR "device num"
+The cxacru device number to view the status of.
+.TP
+.BR -h ", " --help
+Output usage information.
+.SH FILES
+.I /proc/net/atm/devices
+.RS
+Used to identify cxacru devices and get AAL5 stats.
+.RE
+.I /sys/class/atm/cxacruN/device/
+.RS
+Per device statistics and status information. Available in 2.6.22 and newer.
+.SH BUGS
+Will accept any nonsense for device number,
+treating it as 0.
+.SH AUTHOR
+Simon Arlott
+.SH "SEE ALSO"
+.BR cat (1)
