@@ -1,21 +1,25 @@
 /*
-   cxacru-info - outputs cxacru status information from sysfs
+	cxacru-info - outputs cxacru status information from sysfs
+	(also an example of obsessive checking of the return value
+	and insane code to keep the layout of the output the same)
 
-   Copyright ©2007 Simon Arlott
+	Copyright ©2007 Simon Arlott
 
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License v2
-   as published by the Free Software Foundation.
+	This program is free software; you can redistribute it and/or
+	modify it under the terms of the GNU General Public License v2
+	as published by the Free Software Foundation.
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-   Or, point your browser to http://www.gnu.org/copyleft/gpl.html
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+	Or, point your browser to http://www.gnu.org/copyleft/gpl.html
+
+	$Id$
 */
 
 #include <stdio.h>
@@ -42,19 +46,30 @@ enum { TXcount, TXerr, RXcount, RXerr, RXdrop };
 char *cxacru(const char *file) {
 	char filename[MAXLEN];
 	char *data;
+	int ret;
 
 	if (dev_num == -1) {
-		printf("cxacru device not found\n");
+		fprintf(stderr, "cxacru device not found\n");
 		exit(1);
 	}
 
-	data = malloc(MAXLEN);
+	data = malloc(MAXLEN + 1);
 	if (data == NULL) {
 		perror("malloc");
 		exit(3);
 	}
+	memset(data, 0, MAXLEN + 1);
 
-	snprintf(filename, MAXLEN, SYS_PATH "cxacru%u/device/%s", dev_num, file);
+	ret = snprintf(filename, MAXLEN, SYS_PATH "cxacru%u/device/%s", dev_num, file);
+	if (ret < 0) {
+		perror("snprintf");
+		exit(3);
+	}
+	if (ret >= MAXLEN) {
+		fprintf(stderr, "snprintf: filename too long\n");
+		exit(3);
+	}
+
 	FILE *fd = fopen(filename, "r");
 	if (fd == NULL) {
 		perror(filename);
@@ -64,7 +79,10 @@ char *cxacru(const char *file) {
 		perror(filename);
 		exit(1);
 	}
-	fclose(fd);
+	if (fclose(fd) != 0) {
+		perror(filename);
+		exit(1);
+	}
 
 	if (strlen(data) > 0) // remove newline
 		data[strlen(data) - 1] = 0;
@@ -116,7 +134,7 @@ void find_atm_dev(char *cxacru_num) {
 
 	ret = fscanf(fd, "%a[^\n]%*[\n]", &tmp);
 	if (ret != 1) {
-		perror("scanf");
+		fprintf(stderr, ATM_DEVICES ": invalid format\n");
 		exit(3);
 	}
 	free(tmp);
@@ -136,7 +154,7 @@ int main(int argc, char *argv[]) {
 	char *modulation;
 
 	if (argc > 2 || (argc == 2 && !strncmp(argv[1], "-h", 3))) {
-		printf("Usage: %s [device num]\n", argv[0]);
+		PRINTF("Usage: %s [device num]\n", argv[0]);
 		return 2;
 	}
 	find_atm_dev(argc == 2 ? argv[1] : NULL);
