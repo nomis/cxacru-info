@@ -121,7 +121,7 @@ char *intpad(unsigned int value, int len) {
 	return strpad(ret, len);
 }
 
-void find_atm_dev(char *cxacru_num) {
+void find_atm_dev(int cxacru_num) {
 	char *tmp;
 	unsigned int num;
 	int ret;
@@ -142,7 +142,7 @@ void find_atm_dev(char *cxacru_num) {
 	while (6 == (ret = fscanf(fd,
 			"%u cxacru %*s 0 ( %*d %*d %*d %*d %*d ) 5 ( %d %d %d %d %d ) [%*d]%*[\n]",
 			&num, &aal5[0], &aal5[1], &aal5[2], &aal5[3], &aal5[4]))) {
-		if (cxacru_num == NULL || num == atoi(cxacru_num)) {
+		if (cxacru_num < 0 || cxacru_num == num) {
 			dev_num = num;
 			break;
 		}
@@ -153,11 +153,11 @@ void find_atm_dev(char *cxacru_num) {
 int main(int argc, char *argv[]) {
 	char *modulation;
 
-	if (argc > 2 || (argc == 2 && !strncmp(argv[1], "-h", 3))) {
+	if (argc > 2 || (argc == 2 && (!strncmp(argv[1], "-h", 3) || !strncmp(argv[1], "--help", 7)))) {
 		PRINTF("Usage: %s [device num]\n", argv[0]);
 		return 2;
 	}
-	find_atm_dev(argc == 2 ? argv[1] : NULL);
+	find_atm_dev(argc == 2 ? atoi(argv[1]) : -1);
 
 	PRINTF("                   Downstream     Upstream\n");
 	PRINTF("\n");
