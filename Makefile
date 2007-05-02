@@ -25,7 +25,7 @@ dist:
 	rm -f cxacru-info.tar.bz2
 	rm -rf .tmp
 	mkdir -p .tmp/cxacru-info
-	cp Makefile cxacru-info.c cxacru-info.1 .tmp/cxacru-info/
+	cp Makefile cxacru-info.c cxacru-info.1 GPL-2 .tmp/cxacru-info/
 	tar -jf cxacru-info.tar.bz2 --numeric-owner --owner=0 --group=0 -C .tmp/ -c cxacru-info/
 	tar -tvjf cxacru-info.tar.bz2
 	rm -rf .tmp
