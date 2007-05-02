@@ -13,6 +13,7 @@ clean:
 
 distclean: clean
 	rm -f cxacru-info.tar.gz
+	rm -rf .tmp
 
 install: cxacru-info
 	mkdir -p $(PREFIX)/bin/
@@ -22,4 +23,9 @@ install: cxacru-info
 
 dist:
 	rm -f cxacru-info.tar.gz
-	tar -zf cxacru-info.tar.gz --numeric-owner --owner=0 --group=0 -c Makefile cxacru-info.c cxacru-info.1
+	rm -rf .tmp
+	mkdir -p .tmp/cxacru-info
+	cp Makefile cxacru-info.c cxacru-info.1 .tmp/cxacru-info/
+	tar -zf cxacru-info.tar.gz --numeric-owner --owner=0 --group=0 -C .tmp/ -c cxacru-info/
+	tar -tvzf cxacru-info.tar.gz
+	rm -rf .tmp
