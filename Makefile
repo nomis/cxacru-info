@@ -25,8 +25,13 @@ install: cxacru-info
 dist:
 	rm -f "cxacru-info_r$(REV).tar.bz2"
 	rm -rf .tmp
-	mkdir -p ".tmp/cxacru-info_r$(REV)"
-	cp Makefile cxacru-info.c cxacru-info.1 GPL-2 ".tmp/cxacru-info_r$(REV)/"
-	tar -jf "cxacru-info_r$(REV).tar.bz2" --numeric-owner --owner=0 --group=0 -C .tmp/ -c "cxacru-info_r$(REV)/"
+	mkdir -p ".tmp/cxacru-info_r$(REV)/" \
+".tmp/cxacru-info_r$(REV)/src/" \
+".tmp/cxacru-info_r$(REV)/doc/" \
+".tmp/cxacru-info_r$(REV)/pkg/"
+	cp -a Makefile src/ doc/ pkg/ GPL-2 ".tmp/cxacru-info_r$(REV)/"
+	tar -jf "cxacru-info_r$(REV).tar.bz2" \
+--numeric-owner --owner=0 --group=0 --exclude=.svn \
+-C .tmp/ -c "cxacru-info_r$(REV)/"
 	tar -tvjf "cxacru-info_r$(REV).tar.bz2"
 	rm -rf .tmp
