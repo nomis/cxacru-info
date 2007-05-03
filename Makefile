@@ -1,8 +1,11 @@
-# $Id$
 .POSIX:
-.PHONY: clean install dist distclean
+# $Id$
+VER=0.5
+
 PREFIX=/usr/local
-REV=0
+BINDIR=$(PREFIX)/bin
+MANDIR=$(PREFIX)/man
+.PHONY: clean install dist distclean
 
 cxacru-info: src/cxacru-info.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $<
@@ -13,25 +16,26 @@ clean:
 	rm -f cxacru-info
 
 distclean: clean
-	rm -f cxacru-info_r*.tar.bz2
+	rm -f cxacru-info_*.tar.bz2
 	rm -rf .tmp
 
 install: cxacru-info
 	mkdir -p $(PREFIX)/bin/
-	cp cxacru-info $(PREFIX)/bin/
-	mkdir -p $(PREFIX)/man/man1/
-	cp doc/cxacru-info.1 $(PREFIX)/man/man1/
+	install -m 755 -d $(BINDIR)/
+	install -m 755 -d $(MANDIR)/man1/
+	install -m 755 cxacru-info $(BINDIR)/cxacru-info
+	install -m 644 doc/cxacru-info.1 $(MANDIR)/man1/
 
 dist:
-	rm -f "cxacru-info_r$(REV).tar.bz2"
+	rm -f "cxacru-info_$(VER).tar.bz2"
 	rm -rf .tmp
-	mkdir -p ".tmp/cxacru-info_r$(REV)/" \
-".tmp/cxacru-info_r$(REV)/src/" \
-".tmp/cxacru-info_r$(REV)/doc/" \
-".tmp/cxacru-info_r$(REV)/pkg/"
-	cp -a Makefile src/ doc/ pkg/ GPL-2 ".tmp/cxacru-info_r$(REV)/"
-	tar -jf "cxacru-info_r$(REV).tar.bz2" \
+	mkdir -p ".tmp/cxacru-info_$(VER)/" \
+".tmp/cxacru-info_$(VER)/src/" \
+".tmp/cxacru-info_$(VER)/doc/" \
+".tmp/cxacru-info_$(VER)/pkg/"
+	cp -a Makefile src/ doc/ pkg/ GPL-2 ".tmp/cxacru-info_$(VER)/"
+	tar -jf "cxacru-info_$(VER).tar.bz2" \
 --numeric-owner --owner=0 --group=0 --exclude=.svn \
--C .tmp/ -c "cxacru-info_r$(REV)/"
-	tar -tvjf "cxacru-info_r$(REV).tar.bz2"
+-C .tmp/ -c "cxacru-info_$(VER)/"
+	tar -tvjf "cxacru-info_$(VER).tar.bz2"
 	rm -rf .tmp
