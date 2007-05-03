@@ -21,8 +21,7 @@ distclean: clean
 
 install: cxacru-info
 	mkdir -p $(PREFIX)/bin/
-	install -m 755 -d $(BINDIR)/
-	install -m 755 -d $(MANDIR)/man1/
+	install -m 755 -d $(BINDIR)/ $(MANDIR)/man1/
 	install -m 755 cxacru-info $(BINDIR)/cxacru-info
 	install -m 644 doc/cxacru-info.1 $(MANDIR)/man1/
 
