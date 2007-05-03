@@ -5,7 +5,7 @@ Summary: outputs cxacru status information from sysfs
 
 Release: 1
 BuildRoot: %{_tmppath}/rpm-%{name}_%{version}
-Source: http://thttpd.lp0.eu/cxacru/%{name}_%{version}.tar.bz2
+Source: http://pub.lp0.eu/cxacru/%{name}_%{version}.tar.bz2
 
 Vendor: Simon Arlott
 License: GPL-2
