@@ -28,63 +28,71 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define PRINTF(format, args...) do { \
-		int ret = printf(format , ##args); \
-		if (ret <= 0) { \
-			perror("printf"); \
+#define MALLOC(ptr, size) do { \
+		ptr = malloc(size); \
+		if (ptr == NULL) { \
+			perror("malloc"); \
 			exit(3); \
 		} \
-	} while(0);
+	} while(0)
+
+#define ZMALLOC(ptr, size) do { \
+		MALLOC(ptr,size); \
+		memset(ptr, 0, size); \
+	} while(0)
+
+#define OOPS(what) \
+	fprintf(stderr, "%s at %s:%u\n", what, __FILE__, __LINE__)
+
+#define PRINTF(format, args...) do { \
+		int __ret = printf(format , ##args); \
+		if (__ret <= 0) \
+			exit(3); \
+	} while(0)
+
+#define FPRINTF(stream, format, args...) do { \
+		int __ret = fprintf(stream, format , ##args); \
+		if (__ret <= 0) \
+			exit(3); \
+	} while(0)
+
+#define SNPRINTF(str, size, format, args...) do { \
+		int __ret = snprintf(str, size, format , ##args); \
+		if (__ret < 0) { \
+			OOPS("snprintf failed"); \
+			exit(3); \
+		} else if (__ret >= size) { \
+			OOPS("snprintf truncated"); \
+			exit(3); \
+		} \
+	} while(0)
+
+#define ERR_IF(expr, str) do { \
+		if (expr) { \
+			perror(str); \
+			exit(1); \
+		} \
+	} while(0)
 
 #define SYS_PATH "/sys/class/atm/"
 #define ATM_DEVICES "/proc/net/atm/devices"
 #define MAXLEN 255
 
-unsigned int dev_num = -1;
-unsigned int aal5[5];
+unsigned long dev_num = -1;
+unsigned long aal5[5];
 
 enum { TXcount, TXerr, RXcount, RXerr, RXdrop };
 
 char *cxacru(const char *file) {
 	char filename[MAXLEN];
 	char *data;
-	int ret;
 
-	if (dev_num == -1) {
-		fprintf(stderr, "cxacru device not found\n");
-		exit(1);
-	}
-
-	data = malloc(MAXLEN + 1); // ensure string is always terminated
-	if (data == NULL) {
-		perror("malloc");
-		exit(3);
-	}
-	memset(data, 0, MAXLEN + 1);
-
-	ret = snprintf(filename, MAXLEN, SYS_PATH "cxacru%u/device/%s", dev_num, file);
-	if (ret < 0) {
-		perror("snprintf");
-		exit(3);
-	}
-	if (ret >= MAXLEN) {
-		fprintf(stderr, "snprintf: filename too long\n");
-		exit(3);
-	}
-
+	ZMALLOC(data, MAXLEN + 1); // ensure string is always terminated
+	SNPRINTF(filename, MAXLEN, SYS_PATH "cxacru%u/device/%s", dev_num, file);
 	FILE *fd = fopen(filename, "r");
-	if (fd == NULL) {
-		perror(filename);
-		exit(1);
-	}
-	if (fgets(data, MAXLEN, fd) == NULL) {
-		perror(filename);
-		exit(1);
-	}
-	if (fclose(fd) != 0) {
-		perror(filename);
-		exit(1);
-	}
+	ERR_IF(fd == NULL, filename);
+	ERR_IF(fgets(data, MAXLEN, fd) == NULL, filename);
+	ERR_IF(fclose(fd) != 0, filename);
 
 	if (strlen(data) > 0) // remove newline
 		data[strlen(data) - 1] = 0;
@@ -95,16 +103,11 @@ char *strpad(char *str, int len) {
 	if (strlen(str) >= len) {
 		return str;
 	} else {
-		char *ret = malloc(len + 1);
+		char *ret;
 
-		if (ret == NULL) {
-			perror("malloc");
-			exit(3);
-		}
-
+		MALLOC(ret, len + 1);
 		memset(ret, ' ', len);
-		ret[len] = 0;
-		memcpy(ret + (len - strlen(str)), str, strlen(str));
+		memcpy(ret + (len - strlen(str)), str, strlen(str) + 1);
 		free(str);
 
 		return ret;
@@ -112,54 +115,55 @@ char *strpad(char *str, int len) {
 }
 
 char *intpad(unsigned int value, int len) {
-	char *ret = malloc(MAXLEN);
+	char *ret;
 
-	if (ret == NULL) {
-		perror("malloc");
-		exit(3);
-	}
+	MALLOC(ret, MAXLEN);
+	SNPRINTF(ret, MAXLEN, "%u", value);
 
-	snprintf(ret, MAXLEN, "%u", value);
 	return strpad(ret, len);
 }
 
-void find_atm_dev(int cxacru_num) {
+void find_atm_dev(long cxacru_num) {
 	char *tmp;
 	unsigned int num;
 	int ret;
 	FILE *fd = fopen(ATM_DEVICES, "r");
 
-	if (fd == NULL) {
-		perror(ATM_DEVICES);
-		exit(1);
-	}
-
+	ERR_IF(fd == NULL, ATM_DEVICES);
 	ret = fscanf(fd, "%a[^\n]%*[\n]", &tmp);
 	if (ret != 1) {
-		fprintf(stderr, ATM_DEVICES ": invalid format\n");
-		exit(3);
+		FPRINTF(stderr, ATM_DEVICES ": invalid format\n");
+		exit(1);
 	}
 	free(tmp);
 
 	while (6 == (ret = fscanf(fd,
-			"%u cxacru %*s 0 ( %*d %*d %*d %*d %*d ) 5 ( %d %d %d %d %d ) [%*d]%*[\n]",
+			"%u cxacru %*s 0 ( %*ld %*ld %*ld %*ld %*ld ) 5 ( %ld %ld %ld %ld %ld ) [%*ld]%*[\n]",
 			&num, &aal5[0], &aal5[1], &aal5[2], &aal5[3], &aal5[4]))) {
 		if (cxacru_num < 0 || cxacru_num == num) {
 			dev_num = num;
 			break;
 		}
 	}
-	fclose(fd);
+	ERR_IF(fclose(fd) != 0, ATM_DEVICES);
 }
 
 int main(int argc, char *argv[]) {
 	char *modulation;
 
-	if (argc > 2 || (argc == 2 && (!strncmp(argv[1], "-h", 3) || !strncmp(argv[1], "--help", 7)))) {
+	if (argc > 2 || (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help")))) {
 		PRINTF("Usage: %s [device num]\n", argv[0]);
 		return 2;
+	} else if (argc == 2 && (!strcmp(argv[1], "-v") || !strcmp(argv[1], "--version"))) {
+		PRINTF("cxacru-info $Revision$ $Date$\n");
+		return 0;
 	}
-	find_atm_dev(argc == 2 ? atoi(argv[1]) : -1);
+
+	find_atm_dev(argc == 2 ? atol(argv[1]) : -1);
+	if (dev_num == -1) {
+		FPRINTF(stderr, "cxacru device not found\n");
+		return 1;
+	}
 
 	PRINTF("                   Downstream     Upstream\n");
 	PRINTF("\n");
