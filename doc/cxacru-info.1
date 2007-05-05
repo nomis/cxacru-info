@@ -7,7 +7,11 @@ cxacru-info \- outputs cxacru status information from sysfs
 .I device num
 .B ]
 .br
-.B cxacru-info [-h | --help]
+.B cxacru-info
+.BR [ " -h " | " --help " ]
+.br
+.B cxacru-info
+.BR [ " -v " | " --version " ]
 .SH DESCRIPTION
 .B cxacru-info
 retrives status information of Conexant Accessrunner ADSL
@@ -21,6 +25,9 @@ The cxacru device number to view the status of.
 .TP
 .BR -h ", " --help
 Output usage information.
+.TP
+.BR -v ", " --version
+Output version information.
 .SH FILES
 .I /proc/net/atm/devices
 .RS
