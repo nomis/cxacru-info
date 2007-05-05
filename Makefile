@@ -2,6 +2,7 @@
 # $Id$
 VER=0.5
 
+CFLAGS=-Os
 PREFIX=/usr/local
 BINDIR=$(PREFIX)/bin
 MANDIR=$(PREFIX)/man
