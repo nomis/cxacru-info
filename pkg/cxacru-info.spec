@@ -1,5 +1,5 @@
 Name: cxacru-info
-Version: 0.5
+Version: 0.6
 Group: Applications/System
 Summary: outputs cxacru status information from sysfs
 
