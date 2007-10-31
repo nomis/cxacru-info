@@ -6,7 +6,7 @@ CFLAGS=-Os
 PREFIX=/usr/local
 BINDIR=$(PREFIX)/bin
 MANDIR=$(PREFIX)/man
-.PHONY: clean install dist distclean
+.PHONY: all clean install dist distclean
 
 cxacru-info: src/cxacru-info.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $<
@@ -21,7 +21,6 @@ distclean: clean
 	rm -rf .tmp
 
 install: cxacru-info
-	mkdir -p $(PREFIX)/bin/
 	install -m 755 -d $(BINDIR)/ $(MANDIR)/man1/
 	install -m 755 cxacru-info $(BINDIR)/cxacru-info
 	install -m 644 doc/cxacru-info.1 $(MANDIR)/man1/
