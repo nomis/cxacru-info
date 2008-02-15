@@ -124,18 +124,13 @@ char *intpad(unsigned int value, int len) {
 }
 
 void find_atm_dev(long cxacru_num) {
-	char *tmp;
 	unsigned int num;
 	int ret;
 	FILE *fd = fopen(ATM_DEVICES, "r");
 
 	ERR_IF(fd == NULL, ATM_DEVICES);
-	ret = fscanf(fd, "%a[^\n]%*[\n]", &tmp);
-	if (ret != 1) {
-		FPRINTF(stderr, ATM_DEVICES ": invalid format\n");
-		exit(1);
-	}
-	free(tmp);
+	ret = fscanf(fd, "%*[^\n][\n]");
+	ERR_IF(ret < 0, ATM_DEVICES);
 
 	while (6 == (ret = fscanf(fd,
 			"%u cxacru %*s 0 ( %*ld %*ld %*ld %*ld %*ld ) 5 ( %ld %ld %ld %ld %ld ) [%*ld]%*[\n]",

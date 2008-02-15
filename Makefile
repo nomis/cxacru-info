@@ -1,6 +1,6 @@
 .POSIX:
 # $Id$
-VER=0.6
+VER=0.7
 
 CFLAGS=-Os
 PREFIX=/usr/local
