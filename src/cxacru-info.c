@@ -133,7 +133,7 @@ int find_atm_dev(unsigned long cxacru_num) {
 	ERR_IF(ret < 0, ATM_DEVICES);
 
 	while (6 == (ret = fscanf(fd,
-			"%u cxacru %*s 0 ( %*ld %*ld %*ld %*ld %*ld ) 5 ( %ld %ld %ld %ld %ld ) [%*ld]%*[\n]",
+			"%u cxacru %*s 0 ( %*d %*d %*d %*d %*d ) 5 ( %ld %ld %ld %ld %ld ) [%*d]%*[\n]",
 			&num, &aal5[0], &aal5[1], &aal5[2], &aal5[3], &aal5[4]))) {
 		if (!found || cxacru_num == num) {
 			dev_num = num;
