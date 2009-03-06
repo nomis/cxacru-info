@@ -21,7 +21,6 @@
 
 
 	http://simon.arlott.org/sw/cxacru-info/
-	$Id$
 */
 
 #include <stdio.h>
@@ -150,7 +149,7 @@ int main(int argc, char *argv[]) {
 		PRINTF("Usage: %s [device num]\n", argv[0]);
 		return 2;
 	} else if (argc == 2 && (!strcmp(argv[1], "-v") || !strcmp(argv[1], "--version"))) {
-		PRINTF("cxacru-info $Revision$ $Date$\n");
+		PRINTF("cxacru-info $Id$\n");
 		return 0;
 	}
 

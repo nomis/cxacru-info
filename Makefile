@@ -1,5 +1,4 @@
 .POSIX:
-# $Id$
 VER=0.7
 
 CFLAGS=-Os
