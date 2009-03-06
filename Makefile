@@ -1,5 +1,5 @@
 .POSIX:
-VER=0.7
+VER=0.8
 
 CFLAGS=-Os -Wall -Wextra -Werror
 PREFIX=/usr/local
