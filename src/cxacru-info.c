@@ -153,7 +153,7 @@ int main(int argc, char *argv[]) {
 		PRINTF("Usage: %s [device num]\n", argv[0]);
 		return 2;
 	} else if (argc == 2 && (!strcmp(argv[1], "-v") || !strcmp(argv[1], "--version"))) {
-		PRINTF("cxacru-info $Id$\n");
+		PRINTF("cxacru-info v0.8\n");
 		return 0;
 	}
 
