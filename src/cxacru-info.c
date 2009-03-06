@@ -77,7 +77,7 @@
 #define ATM_DEVICES "/proc/net/atm/devices"
 #define MAXLEN 255
 
-unsigned long dev_num = -1;
+unsigned long dev_num;
 unsigned long aal5[5];
 
 enum { TXcount, TXerr, RXcount, RXerr, RXdrop };
@@ -87,7 +87,7 @@ char *cxacru(const char *file) {
 	char *data;
 
 	ZMALLOC(data, MAXLEN + 1); // ensure string is always terminated
-	SNPRINTF(filename, MAXLEN, SYS_PATH "cxacru%u/device/%s", dev_num, file);
+	SNPRINTF(filename, MAXLEN, SYS_PATH "cxacru%lu/device/%s", dev_num, file);
 	FILE *fd = fopen(filename, "r");
 	ERR_IF(fd == NULL, filename);
 	ERR_IF(fgets(data, MAXLEN, fd) == NULL, filename);
@@ -98,7 +98,7 @@ char *cxacru(const char *file) {
 	return data;
 }
 
-char *strpad(char *str, int len) {
+char *strpad(char *str, size_t len) {
 	if (strlen(str) >= len) {
 		return str;
 	} else {
@@ -122,8 +122,9 @@ char *intpad(unsigned int value, int len) {
 	return strpad(ret, len);
 }
 
-void find_atm_dev(long cxacru_num) {
+int find_atm_dev(unsigned long cxacru_num) {
 	unsigned int num;
+	int found = 0;
 	int ret;
 	FILE *fd = fopen(ATM_DEVICES, "r");
 
@@ -134,12 +135,15 @@ void find_atm_dev(long cxacru_num) {
 	while (6 == (ret = fscanf(fd,
 			"%u cxacru %*s 0 ( %*ld %*ld %*ld %*ld %*ld ) 5 ( %ld %ld %ld %ld %ld ) [%*ld]%*[\n]",
 			&num, &aal5[0], &aal5[1], &aal5[2], &aal5[3], &aal5[4]))) {
-		if (cxacru_num < 0 || cxacru_num == num) {
+		if (!found || cxacru_num == num) {
 			dev_num = num;
+			found = 1;
 			break;
 		}
 	}
 	ERR_IF(fclose(fd) != 0, ATM_DEVICES);
+
+	return !found;
 }
 
 int main(int argc, char *argv[]) {
@@ -153,8 +157,7 @@ int main(int argc, char *argv[]) {
 		return 0;
 	}
 
-	find_atm_dev(argc == 2 ? atol(argv[1]) : -1);
-	if (dev_num == -1) {
+	if (find_atm_dev(argc == 2 ? strtoul(argv[1], NULL, 10) : 0)) {
 		FPRINTF(stderr, "cxacru device not found\n");
 		return 1;
 	}

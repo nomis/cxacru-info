@@ -1,7 +1,7 @@
 .POSIX:
 VER=0.7
 
-CFLAGS=-Os
+CFLAGS=-Os -Wall -Wextra
 PREFIX=/usr/local
 BINDIR=$(PREFIX)/bin
 MANDIR=$(PREFIX)/man
