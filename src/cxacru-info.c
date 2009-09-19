@@ -147,8 +147,6 @@ int find_atm_dev(unsigned long cxacru_num) {
 }
 
 int main(int argc, char *argv[]) {
-	char *modulation;
-
 	if (argc > 2 || (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help")))) {
 		PRINTF("Usage: %s [device num]\n", argv[0]);
 		return 2;
@@ -195,8 +193,6 @@ int main(int argc, char *argv[]) {
 	PRINTF("\n");
 	PRINTF("Line status        %s\n", cxacru("line_status"));
 	PRINTF("Link status        %s\n", cxacru("link_status"));
-	modulation = cxacru("modulation");
-	if (strlen(modulation) > 0)
 	PRINTF("Modulation         %s\n", cxacru("modulation"));
 	PRINTF("\n");
 	PRINTF("MAC address        %s\n", cxacru("mac_address"));
