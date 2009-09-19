@@ -1,5 +1,5 @@
 .POSIX:
-VER=0.8
+VER=0.9
 
 CFLAGS=-Os -Wall -Wextra -Werror
 PREFIX=/usr/local
@@ -7,10 +7,14 @@ BINDIR=$(PREFIX)/bin
 MANDIR=$(PREFIX)/man
 .PHONY: all clean install dist distclean
 
-cxacru-info: src/cxacru-info.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $<
+#cxacru-info: src/cxacru-info.c
+#	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
-all: cxacru-info dist
+cxacru-info: src/cxacru-info.py
+	cp src/cxacru-info.py cxacru-info
+	chmod +x cxacru-info
+
+all: dist
 
 clean:
 	rm -f cxacru-info
