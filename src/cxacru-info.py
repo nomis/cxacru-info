@@ -56,20 +56,30 @@ attributes = {
 }
 
 def read_attr(name):
-	with open(ATTR_PATH % (device["itf"], name), "r") as f:
-		return f.read().rstrip("\n")
+	try:
+		with open(ATTR_PATH % (device["itf"], name), "r") as f:
+			return f.read().rstrip("\n")
+	except IOError, msg:
+		print >> sys.stderr, "%s: Error reading %s%s stats" % (sys.argv[0], DEV_NAME, device["itf"])
+		print >> sys.stderr, "%s: IOError: %s" % (sys.argv[0], msg)
+		exit(EXIT_FAILURE)
 
 def find_dev(num):
-	with open(ATM_DEVICES) as f:
-		f.readline()
-		for line in f:
-			line = ATM_LINE_PAT.match(line)
-			if not line:
-				contine
-			line = line.groupdict()
+	try:
+		with open(ATM_DEVICES) as f:
+			f.readline()
+			for line in f:
+				line = ATM_LINE_PAT.match(line)
+				if not line:
+					contine
+				line = line.groupdict()
 
-			if line["type"] == DEV_NAME and (num == None or int(line["itf"]) == num):
-				return line
+				if line["type"] == DEV_NAME and (num == None or int(line["itf"]) == num):
+					return line
+	except IOError, msg:
+		print >> sys.stderr, "%s: Error reading ATM devices" % (sys.argv[0])
+		print >> sys.stderr, "%s: IOError: %s" % (sys.argv[0], msg)
+		exit(EXIT_FAILURE)
 	return None
 
 def get_aal(num):
@@ -128,30 +138,20 @@ if len(sys.argv) >= 2:
 			print >> sys.stderr, "%s: ATM device %s%s not found" % (sys.argv[0], DEV_NAME, num)
 			sys.exit(EXIT_FAILURE)
 else:
-	try:
-		device = find_dev(None)
-	except IOError, msg:
-		print >> sys.stderr, "%s: Error reading ATM devices" % (sys.argv[0])
-		print >> sys.stderr, "%s: IOError: %s" % (sys.argv[0], msg)
-		exit(EXIT_FAILURE)
+	device = find_dev(None)
 	if device == None:
 		print >> sys.stderr, "%s: no %s ATM devices found" % (sys.argv[0], DEV_NAME)
 		sys.exit(EXIT_FAILURE)
 
 aal5 = get_aal(5)
-try:
-	print_line("", format_attr("Downstream", None), format_attr("Upstream", None))
-	print_attr(["rate", "attenuation", "snr_margin", "transmitter_power"])
-	if aal5:
-		print
-		print_line("AAL5 Frames", "%10s" % (aal5["rx_cnt"]), "%10s" % (aal5["tx_cnt"]))
-		print_line("     Errors", "%10s" % (aal5["rx_err"]), "%10s" % (aal5["tx_err"]))
-		print_line("     Dropped", "%10s" % (aal5["rx_drop"]), "")
-	print_attr(["crc_errors", "fec_errors", "hec_errors"])
-	print_attr(["line_status", "link_status", "modulation"])
-	print_attr(["mac_address"])
-except IOError, msg:
-	print >> sys.stderr, "%s: Error reading %s%s stats" % (sys.argv[0], DEV_NAME, device["itf"])
-	print >> sys.stderr, "%s: IOError: %s" % (sys.argv[0], msg)
-	exit(EXIT_FAILURE)
+print_line("", format_attr("Downstream", None), format_attr("Upstream", None))
+print_attr(["rate", "attenuation", "snr_margin", "transmitter_power"])
+if aal5:
+	print
+	print_line("AAL5 Frames", "%10s" % (aal5["rx_cnt"]), "%10s" % (aal5["tx_cnt"]))
+	print_line("     Errors", "%10s" % (aal5["rx_err"]), "%10s" % (aal5["tx_err"]))
+	print_line("     Dropped", "%10s" % (aal5["rx_drop"]), "")
+print_attr(["crc_errors", "fec_errors", "hec_errors"])
+print_attr(["line_status", "link_status", "modulation"])
+print_attr(["mac_address"])
 sys.exit(EXIT_SUCCESS)
