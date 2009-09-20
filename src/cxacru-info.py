@@ -22,7 +22,6 @@
 #
 #	http://simon.arlott.org/sw/cxacru-info/
 
-from __future__ import with_statement
 import sys
 import re
 
