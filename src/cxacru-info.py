@@ -151,7 +151,7 @@ try:
 	print_attr(["line_status", "link_status", "modulation"])
 	print_attr(["mac_address"])
 except IOError, msg:
-	print >> sys.stderr, "%s: Error reading AAL stats" % (sys.argv[0])
+	print >> sys.stderr, "%s: Error reading %s%s stats" % (sys.argv[0], DEV_NAME, device["itf"])
 	print >> sys.stderr, "%s: IOError: %s" % (sys.argv[0], msg)
 	exit(EXIT_FAILURE)
 sys.exit(EXIT_SUCCESS)
