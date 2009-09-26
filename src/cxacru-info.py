@@ -22,6 +22,8 @@
 #
 #	http://simon.arlott.org/sw/cxacru-info/
 
+from __future__ import print_function
+import functools
 import sys
 import re
 
@@ -53,13 +55,16 @@ attributes = {
 	"mac_address":		("MAC address",		DS,	None)
 }
 
+def warn(msg):
+	print("%s: %s" % (sys.argv[0], msg), file=sys.stderr)
+
 def read_attr(name):
 	try:
 		with open(ATTR_PATH % (device["itf"], name), "r") as f:
 			return f.read().rstrip("\n")
-	except IOError, msg:
-		print >> sys.stderr, "%s: Error reading %s%s stats" % (sys.argv[0], DEV_NAME, device["itf"])
-		print >> sys.stderr, "%s: IOError: %s" % (sys.argv[0], msg)
+	except IOError as e:
+		warn("Error reading %s%s stats" % (DEV_NAME, device["itf"]))
+		warn("IOError: %s" % (e))
 		exit(EXIT_FAILURE)
 
 def find_dev(num):
@@ -74,9 +79,9 @@ def find_dev(num):
 
 				if line["type"] == DEV_NAME and (num == None or int(line["itf"]) == num):
 					return line
-	except IOError, msg:
-		print >> sys.stderr, "%s: Error reading ATM devices" % (sys.argv[0])
-		print >> sys.stderr, "%s: IOError: %s" % (sys.argv[0], msg)
+	except IOError as e:
+		warn("Error reading ATM devices" % (sys.argv[0]))
+		warn("IOError: %s" % (e))
 		exit(EXIT_FAILURE)
 	return None
 
@@ -89,9 +94,9 @@ def get_aal(num):
 
 def print_line(desc, downstream, upstream):
 	if downstream != "" and upstream == "":
-		print "%-15s%s" % (desc, downstream)
+		print("%-15s%s" % (desc, downstream))
 	elif downstream != "":
-		print "%-15s%-15s%s" % (desc, downstream, upstream)
+		print("%-15s%-15s%s" % (desc, downstream, upstream))
 
 def format_attr(value, units):
 	if units != None:
@@ -100,7 +105,7 @@ def format_attr(value, units):
 		return "    %s" % (value)
 
 def print_attr(names):
-	print
+	print()
 	for name in names:
 		attr = attributes[name]
 
@@ -116,12 +121,12 @@ def print_attr(names):
 				"", format_attr(read_attr(name), attr[UNITS]))
 
 if "-h" in sys.argv[1:] or "--help" in sys.argv[1:] or len(sys.argv) > 2:
-	print "Usage: %s [device num]" % (sys.argv[0])
+	print("Usage: %s [device num]" % (sys.argv[0]))
 	sys.exit(EXIT_USAGE)
 
 if len(sys.argv) >= 2:
 	if sys.argv[1] in ["-v", "--version"]:
-		print "cxacru-info v0.9"
+		print("cxacru-info v0.9")
 		sys.exit(EXIT_SUCCESS)
 	else:
 		try:
@@ -130,22 +135,22 @@ if len(sys.argv) >= 2:
 				raise ValueError
 			device = find_dev(num)
 		except ValueError:
-			print >> sys.stderr, "%s: ATM device number \"%s\" is invalid" % (sys.argv[0], sys.argv[1])
+			warn("ATM device number \"%s\" is invalid" % (sys.argv[1]))
 			sys.exit(EXIT_FAILURE)
 		if device == None:
-			print >> sys.stderr, "%s: ATM device %s%s not found" % (sys.argv[0], DEV_NAME, num)
+			warn("ATM device %s%s not found" % (DEV_NAME, num))
 			sys.exit(EXIT_FAILURE)
 else:
 	device = find_dev(None)
 	if device == None:
-		print >> sys.stderr, "%s: no %s ATM devices found" % (sys.argv[0], DEV_NAME)
+		warn("no %s ATM devices found" % (DEV_NAME))
 		sys.exit(EXIT_FAILURE)
 
 aal5 = get_aal(5)
 print_line("", format_attr("Downstream", None), format_attr("Upstream", None))
 print_attr(["rate", "attenuation", "snr_margin", "transmitter_power"])
 if aal5:
-	print
+	print()
 	print_line("AAL5 Frames", "%10s" % (aal5["rx_cnt"]), "%10s" % (aal5["tx_cnt"]))
 	print_line("     Errors", "%10s" % (aal5["rx_err"]), "%10s" % (aal5["tx_err"]))
 	print_line("     Dropped", "%10s" % (aal5["rx_drop"]), "")
