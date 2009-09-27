@@ -80,7 +80,7 @@ def find_dev(num):
 				if line["type"] == DEV_NAME and (num == None or int(line["itf"]) == num):
 					return line
 	except IOError as e:
-		warn("Error reading ATM devices" % (sys.argv[0]))
+		warn("Error reading ATM devices")
 		warn("IOError: %s" % (e))
 		exit(EXIT_FAILURE)
 	return None
