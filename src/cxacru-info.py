@@ -29,8 +29,8 @@ import re
 
 SYS_PATH = "/sys/class/atm"
 DEV_NAME = "cxacru"
-DEV_PATH = SYS_PATH + "/" + DEV_NAME + "%s/device"
-ATTR_PATH = DEV_PATH + "/%s"
+DEV_PATH = SYS_PATH + "/" + DEV_NAME + "{num}/device"
+ATTR_PATH = DEV_PATH + "/{name}"
 ATM_DEVICES = "/proc/net/atm/devices"
 
 ATM_LINE_PAT = re.compile('^ *(?P<itf>\d+) +(?P<type>\w+) +(?P<addr>\w)+(?P<aals>[^\t]+)\t\[(?P<refcnt>\d+)\]')
@@ -56,15 +56,15 @@ attributes = {
 }
 
 def warn(msg):
-	print("%s: %s" % (sys.argv[0], msg), file=sys.stderr)
+	print("{0}: {1}".format(sys.argv[0], msg), file=sys.stderr)
 
 def read_attr(name):
 	try:
-		with open(ATTR_PATH % (device["itf"], name), "r") as f:
+		with open(ATTR_PATH.format(num=device["itf"], name=name), "r") as f:
 			return f.read().rstrip("\n")
 	except IOError as e:
-		warn("Error reading %s%s stats" % (DEV_NAME, device["itf"]))
-		warn("IOError: %s" % (e))
+		warn("Error reading {0}{1} stats".format(DEV_NAME, device["itf"]))
+		warn("IOError: {0}".format(e))
 		exit(EXIT_FAILURE)
 
 def find_dev(num):
@@ -80,7 +80,7 @@ def find_dev(num):
 					return line
 	except IOError as e:
 		warn("Error reading ATM devices")
-		warn("IOError: %s" % (e))
+		warn("IOError: {0}".format(e))
 		exit(EXIT_FAILURE)
 	return None
 
@@ -92,15 +92,15 @@ def get_aal(num):
 
 def print_line(desc, downstream, upstream):
 	if downstream != "" and upstream == "":
-		print("%-15s%s" % (desc, downstream))
+		print("{0:15}{1}".format(desc, downstream))
 	elif downstream != "":
-		print("%-15s%-15s%s" % (desc, downstream, upstream))
+		print("{0:15}{1:15}{2}".format(desc, downstream, upstream))
 
 def format_attr(value, units):
 	if units != None:
-		return "%10s%s" % (value, units)
+		return "{0:>10}{1}".format(value, units)
 	else:
-		return "    %s" % (value)
+		return "{0:4}{1}".format("", value)
 
 def print_attr(names):
 	print()
@@ -119,7 +119,7 @@ def print_attr(names):
 				"", format_attr(read_attr(name), attr[UNITS]))
 
 if "-h" in sys.argv[1:] or "--help" in sys.argv[1:] or len(sys.argv) > 2:
-	print("Usage: %s [device num]" % (sys.argv[0]))
+	print("Usage: {0} [device num]".format(sys.argv[0]))
 	sys.exit(EXIT_USAGE)
 
 if len(sys.argv) >= 2:
@@ -133,15 +133,15 @@ if len(sys.argv) >= 2:
 				raise ValueError
 			device = find_dev(num)
 		except ValueError:
-			warn("ATM device number \"%s\" is invalid" % (sys.argv[1]))
+			warn("ATM device number \"{0}\" is invalid".format(sys.argv[1]))
 			sys.exit(EXIT_FAILURE)
 		if device == None:
-			warn("ATM device %s%s not found" % (DEV_NAME, num))
+			warn("ATM device {0}{1} not found".format(DEV_NAME, num))
 			sys.exit(EXIT_FAILURE)
 else:
 	device = find_dev(None)
 	if device == None:
-		warn("no %s ATM devices found" % (DEV_NAME))
+		warn("no {0} ATM devices found".format(DEV_NAME))
 		sys.exit(EXIT_FAILURE)
 
 aal5 = get_aal(5)
@@ -149,9 +149,9 @@ print_line("", format_attr("Downstream", None), format_attr("Upstream", None))
 print_attr(["rate", "attenuation", "snr_margin", "transmitter_power"])
 if aal5:
 	print()
-	print_line("AAL5 Frames", "%10s" % (aal5["rx_cnt"]), "%10s" % (aal5["tx_cnt"]))
-	print_line("     Errors", "%10s" % (aal5["rx_err"]), "%10s" % (aal5["tx_err"]))
-	print_line("     Dropped", "%10s" % (aal5["rx_drop"]), "")
+	print_line("AAL5 Frames", format_attr(aal5["rx_cnt"], ""), format_attr(aal5["tx_cnt"], ""))
+	print_line("     Errors", format_attr(aal5["rx_err"], ""), format_attr(aal5["tx_err"], ""))
+	print_line("     Dropped", format_attr(aal5["rx_drop"], ""), "")
 print_attr(["crc_errors", "fec_errors", "hec_errors"])
 print_attr(["line_status", "link_status", "modulation"])
 print_attr(["mac_address"])
