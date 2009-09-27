@@ -71,9 +71,8 @@ def find_dev(num):
 	try:
 		with open(ATM_DEVICES) as f:
 			f.readline()
-			for line in f:
-				line = ATM_LINE_PAT.match(line)
-				if not line:
+			for line in [ATM_LINE_PAT.match(line) for line in f]:
+				if line is None:
 					continue
 				line = line.groupdict()
 
@@ -86,8 +85,7 @@ def find_dev(num):
 	return None
 
 def get_aal(num):
-	for aal in ATM_AALS_PAT.finditer(device["aals"]):
-		aal = aal.groupdict()
+	for aal in [aal.groupdict() for aal in ATM_AALS_PAT.finditer(device["aals"])]:
 		if int(aal["num"]) == num:
 			return aal
 	return None
