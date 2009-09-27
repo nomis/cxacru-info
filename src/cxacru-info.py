@@ -74,7 +74,7 @@ def find_dev(num):
 			for line in f:
 				line = ATM_LINE_PAT.match(line)
 				if not line:
-					contine
+					continue
 				line = line.groupdict()
 
 				if line["type"] == DEV_NAME and (num == None or int(line["itf"]) == num):
