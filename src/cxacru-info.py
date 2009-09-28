@@ -27,10 +27,8 @@ import functools
 import sys
 import re
 
-SYS_PATH = "/sys/class/atm"
-DEV_NAME = "cxacru"
-DEV_PATH = SYS_PATH + "/" + DEV_NAME + "{num}/device"
-ATTR_PATH = DEV_PATH + "/{name}"
+DEV_TYPE = "cxacru"
+SYS_PATH = "/sys/class/atm/{type}{num}/device/{attr}"
 ATM_DEVICES = "/proc/net/atm/devices"
 
 ATM_LINE_PAT = re.compile('^ *(?P<itf>\d+) +(?P<type>\w+) +(?P<addr>\w)+(?P<aals>[^\t]+)\t\[(?P<refcnt>\d+)\]')
@@ -60,10 +58,10 @@ def warn(msg):
 
 def read_attr(name):
 	try:
-		with open(ATTR_PATH.format(num=device["itf"], name=name), "r") as f:
+		with open(SYS_PATH.format(type=device["type"], num=device["itf"], attr=name), "r") as f:
 			return f.read().rstrip("\n")
 	except IOError as e:
-		warn("Error reading {0}{1} stats".format(DEV_NAME, device["itf"]))
+		warn("Error reading {0}{1} stats".format(device["type"], device["itf"]))
 		warn("IOError: {0}".format(e))
 		exit(EXIT_FAILURE)
 
@@ -76,7 +74,7 @@ def find_dev(num):
 					continue
 				line = line.groupdict()
 
-				if line["type"] == DEV_NAME and (num == None or int(line["itf"]) == num):
+				if line["type"] == DEV_TYPE and (num == None or int(line["itf"]) == num):
 					return line
 	except IOError as e:
 		warn("Error reading ATM devices")
@@ -136,12 +134,12 @@ if len(sys.argv) >= 2:
 			warn("ATM device number \"{0}\" is invalid".format(sys.argv[1]))
 			sys.exit(EXIT_FAILURE)
 		if device == None:
-			warn("ATM device {0}{1} not found".format(DEV_NAME, num))
+			warn("ATM device {0}{1} not found".format(DEV_TYPE, num))
 			sys.exit(EXIT_FAILURE)
 else:
 	device = find_dev(None)
 	if device == None:
-		warn("no {0} ATM devices found".format(DEV_NAME))
+		warn("no {0} ATM devices found".format(DEV_TYPE))
 		sys.exit(EXIT_FAILURE)
 
 aal5 = get_aal(5)
